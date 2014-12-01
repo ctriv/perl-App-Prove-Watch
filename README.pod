@@ -1,0 +1,11 @@
+=pod
+
+=head1 NAME
+
+App::Prove::Watch - Run tests whenever changes occure.
+
+=head1 VERSION
+
+version 0.1
+
+=cut

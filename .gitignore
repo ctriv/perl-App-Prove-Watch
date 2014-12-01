@@ -1,0 +1,8 @@
+blib/
+MYMETA.*
+pm_to_blib
+Makefile
+.~*
+*~
+Test-VCR-LWP-*
+.build
