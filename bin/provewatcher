@@ -1,0 +1,7 @@
+#!perl
+
+use strict;
+use warnings;
+use App::Prove::Watch;
+
+exit(App::Prove::Watch->run(@ARGV) ? 0 : 1);
