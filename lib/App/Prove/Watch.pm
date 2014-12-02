@@ -13,7 +13,6 @@ App::Prove::Watch - Run tests whenever changes occur.
 
 =cut
 
-
 sub run {
 	my ($class, @args) = @_;
 	
