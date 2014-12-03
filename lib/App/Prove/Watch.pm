@@ -1,11 +1,14 @@
 package App::Prove::Watch;
 
+
 use strict;
 use warnings;
 
 use App::Prove;
 use Filesys::Notify::Simple;
 use File::Basename;
+use Getopt::Long qw(GetOptionsFromArray);
+
 
 =head1 NAME
 
@@ -14,36 +17,17 @@ App::Prove::Watch - Run tests whenever changes occur.
 =cut
 
 sub run {
-	my ($class, @args) = @_;
+	my $class = shift;
+	my ($args, $prove_args) = $class->split_args(@_);
 	
-	my $watcher = Filesys::Notify::Simple->new(["."]);
-	
-	my $has_desk_note = eval {
-		require Log::Dispatch::DesktopNotification;
-	};
-	
-	my $handle_alert = sub {};
-	
-	if ($has_desk_note) {
-		my $notify = Log::Dispatch::DesktopNotification->new(
-			name      => 'notify',
-			min_level => 'notice',
-			app_name  => 'provewatcher',
-		);
-		
-		$handle_alert = sub {
-			$notify->log(
-				level   => 'notice',
-				message => shift,
-			);
-		}
-	}
+	my $watcher      = Filesys::Notify::Simple->new($args->{watch});
+	my $handle_alert = $class->_get_notification_sub;
 	
 	my $last;
 	my $prove = sub {
 		my $app = App::Prove->new;
 		
-		$app->process_args(@args);
+		$app->process_args(@$prove_args);
 		my $ret = $app->run ? 1 : 0;
 		
 		if (defined $last && $ret != $last) {
@@ -81,5 +65,59 @@ sub run {
 		});
 	}
 }
+
+sub split_args {
+	my ($class, @args) = @_;
+	
+	my (@ours, @theirs);
+	
+	while (@args) {
+		local $_ = shift @args;
+		if ($_ eq '--watch' || $_ eq '--run') {
+			push(@ours, $_, shift @args);
+		}
+		else {
+			push(@theirs, $_);
+		}
+	}
+	
+	my %ours;
+	GetOptionsFromArray(\@ours, \%ours,
+		'watch=s@',
+		'run=s',
+	);
+	
+	if (!$ours{watch} || !@{$ours{watch}}) {
+		$ours{watch} = ['.']
+	}	
+	
+	return (\%ours, \@theirs);
+}
+
+
+sub _get_notification_sub {
+	my $has_desk_note = eval {
+		require Log::Dispatch::DesktopNotification;
+	};
+	
+	if ($has_desk_note) {
+		my $notify = Log::Dispatch::DesktopNotification->new(
+			name      => 'notify',
+			min_level => 'notice',
+			app_name  => 'provewatcher',
+		);
+		
+		return sub {
+			$notify->log(
+				level   => 'notice',
+				message => shift,
+			);
+		}
+	}
+	else {
+		return sub {};
+	}
+}
+	
 
 1;
