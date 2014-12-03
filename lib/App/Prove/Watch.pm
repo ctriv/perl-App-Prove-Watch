@@ -18,34 +18,11 @@ App::Prove::Watch - Run tests whenever changes occur.
 
 sub run {
 	my $class = shift;
-	my ($args, $prove_args) = $class->split_args(@_);
+	my ($args, $prove_args) = $class->_split_args(@_);
 	
 	my $watcher      = Filesys::Notify::Simple->new($args->{watch});
-	my $handle_alert = $class->_get_notification_sub;
-	
-	my $last;
-	my $prove = sub {
-		my $app = App::Prove->new;
-		
-		$app->process_args(@$prove_args);
-		my $ret = $app->run ? 1 : 0;
-		
-		if (defined $last && $ret != $last) {
-			my $msg;
-			if ($ret) {
-				$msg = "Tests are now passing.";
-			}
-			else {
-				$msg = "Tests are now failing.";
-			}
-			
-			$handle_alert->($msg);
-		}
-		$last = $ret;
-		
-		return $ret;
-	};
-	
+	my $prove        = $class->_get_prove_sub($args, $prove_args);
+
 	$prove->();
 
 	while (1) {
@@ -66,7 +43,8 @@ sub run {
 	}
 }
 
-sub split_args {
+
+sub _split_args {
 	my ($class, @args) = @_;
 	
 	my (@ours, @theirs);
@@ -92,6 +70,51 @@ sub split_args {
 	}	
 	
 	return (\%ours, \@theirs);
+}
+
+sub _get_prove_sub {
+	my ($class, $args, $prove_args) = @_;
+	
+	my $handle_alert = $class->_get_notification_sub;
+	
+	my $last;
+	my $prove;
+	
+	if ($args->{run}) {
+		$prove = sub {
+			my $ret = system($args->{run});
+			
+			return $ret == 0 ? 1 : 0;
+		};
+	}
+	else {
+		$prove = sub {
+			my $app = App::Prove->new;
+			
+			$app->process_args(@$prove_args);
+			
+			return $app->run ? 1 : 0;
+		};
+	}
+	
+	return sub {
+		my $ret = $prove->();
+		
+		if (defined $last && $ret != $last) {
+			my $msg;
+			if ($ret) {
+				$msg = "Tests are now passing.";
+			}
+			else {
+				$msg = "Tests are now failing.";
+			}
+			
+			$handle_alert->($msg);
+		}
+		$last = $ret;
+		
+		return $ret;
+	};
 }
 
 
