@@ -211,10 +211,6 @@ sub _get_notification_sub {
 
 Ironically, for a TDD tool, there's not enough tests.
 
-=item *
-
-The C<provewatch> script needs documentation.
-
 =back
 
 =head1 AUTHORS
