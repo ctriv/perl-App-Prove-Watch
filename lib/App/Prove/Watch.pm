@@ -57,17 +57,31 @@ it will not be installed by default when you install this module.
 
 =cut
 
-sub run {
+sub new {
 	my $class = shift;
 	my ($args, $prove_args) = $class->_split_args(@_);
 	
+
 	my $watcher      = Filesys::Notify::Simple->new($args->{watch});
 	my $prove        = $class->_get_prove_sub($args, $prove_args);
 
-	$prove->();
+	return bless {
+		watcher => $watcher,
+		prove   => $prove,
+	}, $class;
+}
 
-	while (1) {
-		$watcher->wait(sub {
+sub prove   { return $_[0]->{prove}->() };
+sub watcher { return $_[0]->{watcher}   };
+
+sub run {
+	my ($self, $count) = @_;
+	
+	$self->prove;
+
+	$count ||= -1;
+	while ($count != 0) {
+		$self->watcher->wait(sub {
 			my $doit;
 			foreach my $event (@_) {
 				my $file = basename($event->{path});
@@ -78,7 +92,8 @@ sub run {
 			}
 			
 			if ($doit) {
-				$prove->();
+				$self->prove();
+				$count--;
 			}
 		});
 	}
@@ -122,11 +137,16 @@ sub _get_prove_sub {
 	my $prove;
 	
 	if ($args->{run}) {
-		$prove = sub {
-			my $ret = system($args->{run});
-			
-			return $ret == 0 ? 1 : 0;
-		};
+		if (ref $args->{run}) {
+			$prove = $args->{run};
+		}
+		else {
+			$prove = sub {
+				my $ret = system($args->{run});
+				
+				return $ret == 0 ? 1 : 0;
+			};
+		}
 	}
 	else {
 		$prove = sub {
@@ -189,7 +209,11 @@ sub _get_notification_sub {
 
 =item *
 
-Ironically, for a TDD tool, there's no tests.
+Ironically, for a TDD tool, there's not enough tests.
+
+=item *
+
+The C<provewatch> script needs documentation.
 
 =back
 

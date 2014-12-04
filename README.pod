@@ -55,7 +55,11 @@ it will not be installed by default when you install this module.
 
 =item *
 
-Ironically, for a TDD tool, there's no tests.
+Ironically, for a TDD tool, there's not enough tests.
+
+=item *
+
+The C<provewatch> script needs documentation.
 
 =back
 
