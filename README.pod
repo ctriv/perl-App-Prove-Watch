@@ -57,10 +57,6 @@ it will not be installed by default when you install this module.
 
 Ironically, for a TDD tool, there's not enough tests.
 
-=item *
-
-The C<provewatch> script needs documentation.
-
 =back
 
 =head1 AUTHORS
