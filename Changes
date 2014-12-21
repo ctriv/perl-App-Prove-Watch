@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+	- Update prereqs to require Getopt::Long 2.36 or greater.
+	  Patch from Sergey Romanov 
+
 0.1 Thu Dec 04 2014
 
-	Initial release.
+	- Initial release.
