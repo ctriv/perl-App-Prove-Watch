@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.2 Mon Dec 22 2014
+
 	- Update prereqs to require Getopt::Long 2.36 or greater.
 	  Patch from Sergey Romanov 
 
