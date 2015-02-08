@@ -85,7 +85,7 @@ sub run {
 			my $doit;
 			foreach my $event (@_) {
 				my $file = basename($event->{path});
-				next if $file =~ m/^(?:\.~)/;
+				next if $file =~ m/^(?:\.[~#])/;
 				
 				$doit++;
 				
