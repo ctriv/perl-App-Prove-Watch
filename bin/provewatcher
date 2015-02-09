@@ -40,6 +40,12 @@ you where using L<Dist::Zilla>
 
 	$ provewatcher --run 'dzil test'
 	
+	
+=head2 --ignore
+
+Adds another regexp to the list of files that are ignored.  Can be given
+multiple times.
+	
 =head1 NOTIFICATIONS
 
 If you install L<Log::Dispatch::DesktopNotification>, desktop notifications will

@@ -68,6 +68,7 @@ sub new {
 	return bless {
 		watcher => $watcher,
 		prove   => $prove,
+		args    => $args,
 	}, $class;
 }
 
@@ -83,9 +84,13 @@ sub run {
 	while ($count != 0) {
 		$self->watcher->wait(sub {
 			my $doit;
-			foreach my $event (@_) {
+			FILE: foreach my $event (@_) {
 				my $file = basename($event->{path});
-				next if $file =~ m/^(?:\.[~#])/;
+				next FILE if $file =~ m/^(?:\.[~#])/;
+				
+				if ($self->{args}{ignore}) {
+					next FILE if $file =~ $self->{args}{ignore};
+				}
 				
 				$doit++;
 				
@@ -107,7 +112,7 @@ sub _split_args {
 	
 	while (@args) {
 		local $_ = shift @args;
-		if ($_ eq '--watch' || $_ eq '--run') {
+		if ($_ eq '--watch' || $_ eq '--run' || $_ eq '--ignore') {
 			push(@ours, $_, shift @args);
 		}
 		else {
@@ -119,11 +124,17 @@ sub _split_args {
 	GetOptionsFromArray(\@ours, \%ours,
 		'watch=s@',
 		'run=s',
+		'ignore=s@',
 	);
 	
 	if (!$ours{watch} || !@{$ours{watch}}) {
 		$ours{watch} = ['.']
-	}	
+	}
+	
+	if ($ours{ignore}) {
+		my $merged = join('|', map { qr/$_/ } @{$ours{ignore}});
+		$ours{ignore} = qr/$merged/;
+	}
 	
 	return (\%ours, \@theirs);
 }
