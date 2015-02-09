@@ -72,8 +72,17 @@ sub new {
 	}, $class;
 }
 
-sub prove   { return $_[0]->{prove}->() };
-sub watcher { return $_[0]->{watcher}   };
+sub prove   { return $_[0]->{prove}->() }
+sub watcher { 
+	my $self = shift;
+	
+	if (@_) {
+		$self->{watcher} = shift;
+	}
+	
+	return $self->{watcher};
+}
+
 
 sub run {
 	my ($self, $count) = @_;

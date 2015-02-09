@@ -6,7 +6,7 @@ App::Prove::Watch - Run tests whenever changes occur.
 
 =head1 VERSION
 
-version 0.2
+version 0.3
 
 =head1 SYNOPSIS
 
