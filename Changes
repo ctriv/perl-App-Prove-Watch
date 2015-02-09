@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.3 Mon Feb 09 2015
+
 	- Add --ignore option to add more things to the ignore list.
 
 	- Also ignore .# files by default.  Patch from Daniel Gempesaw.
