@@ -52,6 +52,22 @@ describe "A prove watcher" => sub {
 			is($called, 2);
 		};	
 	};
+
+	describe "with before_prove argument" => sub {
+        it "callback should run once on each prove invocation" => sub {
+            my $sut = App::Prove::Watch->new( '--before_prove' => sub { pass("Called") } );
+            $sut->watcher( mock::watcher->new('somefile') );
+            $sut->run(1);
+        };
+    };
+
+    describe "with after_prove argument" => sub {
+        it "callback should run once on each prove invocation" => sub {
+            my $sut = App::Prove::Watch->new( '--after_prove' => sub { pass("Called") } );
+            $sut->watcher( mock::watcher->new('somefile') );
+            $sut->run(1);
+        };
+    };
 };
 
 
