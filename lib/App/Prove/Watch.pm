@@ -60,7 +60,6 @@ it will not be installed by default when you install this module.
 sub new {
 	my $class = shift;
 	my ($args, $prove_args) = $class->_split_args(@_);
-	
 
 	my $watcher      = Filesys::Notify::Simple->new($args->{watch});
 	my $prove        = $class->_get_prove_sub($args, $prove_args);
@@ -72,7 +71,22 @@ sub new {
 	}, $class;
 }
 
-sub prove   { return $_[0]->{prove}->() }
+sub prove {
+	my $self = shift;
+
+    if ( $self->{args}{before_prove} ) {
+        $self->{args}{before_prove}();
+    }
+
+    my $ret = $self->{prove}->();
+
+    if ( $self->{args}{after_prove} ) {
+        $self->{args}{after_prove}($ret);
+    }
+
+    return $ret;
+}
+
 sub watcher { 
 	my $self = shift;
 	
@@ -87,7 +101,7 @@ sub watcher {
 sub run {
 	my ($self, $count) = @_;
 	
-	$self->prove;
+	$self->prove();
 
 	$count ||= -1;
 	while ($count != 0) {
@@ -121,8 +135,12 @@ sub _split_args {
 	
 	while (@args) {
 		local $_ = shift @args;
-		if ($_ eq '--watch' || $_ eq '--run' || $_ eq '--ignore') {
-			push(@ours, $_, shift @args);
+		if (   $_ eq '--watch'
+		    || $_ eq '--run'
+		    || $_ eq '--ignore'
+		    || $_ eq '--before_prove'
+		    || $_ eq '--after_prove' ) {
+		    push( @ours, $_, shift @args );
 		}
 		else {
 			push(@theirs, $_);
@@ -134,6 +152,8 @@ sub _split_args {
 		'watch=s@',
 		'run=s',
 		'ignore=s@',
+		'after_prove=s',
+		'before_prove=s'
 	);
 	
 	if (!$ours{watch} || !@{$ours{watch}}) {
@@ -144,7 +164,7 @@ sub _split_args {
 		my $merged = join('|', map { qr/$_/ } @{$ours{ignore}});
 		$ours{ignore} = qr/$merged/;
 	}
-	
+
 	return (\%ours, \@theirs);
 }
 
